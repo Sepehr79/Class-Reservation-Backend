@@ -26,6 +26,9 @@ class ClassReservationApplicationTests {
 
     @Test
     void jwtTokenAuthenticationTest() {
+        ResponseEntity<String> protectedResponse1 = testRestTemplate.getForEntity("http://localhost:" + port + "/managers", String.class);
+        Assertions.assertEquals(HttpStatus.FORBIDDEN, protectedResponse1.getStatusCode());
+
         ResponseEntity<UserDto> signupResponse = testRestTemplate.postForEntity("http://localhost:" + port + "/signup",
                 new UserDto("sepehr", "1234", List.of("MANAGER")), UserDto.class);
         Assertions.assertEquals(HttpStatus.OK, signupResponse.getStatusCode());
@@ -41,12 +44,12 @@ class ClassReservationApplicationTests {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.add("Cookie", jwtCookie);
         HttpEntity requestEntity = new HttpEntity(null, requestHeaders);
-        ResponseEntity<String> protectedResponse = testRestTemplate.exchange(
+        ResponseEntity<String> protectedResponse2 = testRestTemplate.exchange(
                 "http://localhost:" + port + "/managers",
                 HttpMethod.GET,
                 requestEntity,
                 String.class);
-        Assertions.assertEquals(HttpStatus.OK, protectedResponse.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, protectedResponse2.getStatusCode());
 
 
     }
