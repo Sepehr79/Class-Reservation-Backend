@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -23,17 +24,20 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RequestFilter implements Filter {
 
+    @Value("${app.cookie.name}")
+    private String cookieName;
+
     private final JwtService jwtService;
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         Cookie[] cookies = ((HttpServletRequest) servletRequest).getCookies();
         if (cookies != null) {
-            Optional<Cookie> s_cookie = Arrays.stream(cookies).filter(specificCookie -> specificCookie.getName().equals("S_COOKIE"))
+            Optional<Cookie> sCookie = Arrays.stream(cookies).filter(specificCookie -> specificCookie.getName().equals(cookieName))
                     .findFirst();
-            if (s_cookie.isPresent()) {
+            if (sCookie.isPresent()) {
                 try {
-                    final String jwt = s_cookie.get().getValue();
+                    final String jwt = sCookie.get().getValue();
                     UserEntity userEntity = jwtService.verifyJwt(jwt);
                     UserAuthenticationDto userAuthenticationDto = new UserAuthenticationDto(userEntity);
                     userAuthenticationDto.setAuthenticated(true);

@@ -3,13 +3,12 @@ package com.verysoft.classreservation.reservation.controller;
 import com.verysoft.classreservation.reservation.dto.ExceptionDto;
 import com.verysoft.classreservation.reservation.dto.UserDto;
 import com.verysoft.classreservation.reservation.entity.UserEntity;
+import com.verysoft.classreservation.reservation.service.CookieService;
 import com.verysoft.classreservation.reservation.service.JwtService;
 import com.verysoft.classreservation.reservation.service.UserEntityService;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +29,7 @@ public class WebController {
 
     private final JwtService jwtService;
 
-    @Value("${app.cookie.name}")
-    private String cookieName;
-
+    private final CookieService cookieService;
 
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody UserDto userDto, HttpServletResponse response) {
@@ -40,7 +37,7 @@ public class WebController {
             UserEntity userEntity = (UserEntity) userEntityService.loadUserByUsername(userDto.getUsername());
             if (userEntityService.validateUser(userDto, userEntity)) {
                 String jwt = jwtService.createJwt(userEntity);
-                response.addCookie(new Cookie(cookieName, jwt));
+                response.addCookie(cookieService.createNewJwtCookie(jwt));
                 return ResponseEntity.ok(new UserDto(userDto.getUsername(), userEntity.getRoles()));
             }
         } catch (UsernameNotFoundException ignored) {}
@@ -61,9 +58,7 @@ public class WebController {
 
     @PostMapping("/logout")
     public ResponseEntity<Object> logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie(cookieName, "");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        response.addCookie(cookieService.createDeletingJwtCookie());
         return ResponseEntity.ok(Map.of("Message", "Logout success"));
     }
 

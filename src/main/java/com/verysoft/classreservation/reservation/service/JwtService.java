@@ -5,8 +5,10 @@ import io.fusionauth.jwt.Verifier;
 import io.fusionauth.jwt.domain.JWT;
 import io.fusionauth.jwt.hmac.HMACSigner;
 import io.fusionauth.jwt.hmac.HMACVerifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -14,12 +16,15 @@ import java.util.Map;
 @Service
 public class JwtService {
 
+    @Value("${app.cookie.duration}")
+    private Duration cookieDuration;
+
     private static final String SECRET = "c40af4c67eb119f651e3fe96ef8c7afbd3b5a45d83b7861a4b5aa237c668ec83";
 
     public String createJwt(UserEntity userEntity) {
         JWT jwt = new JWT()
                 .setIssuedAt(ZonedDateTime.now())
-                .setExpiration(ZonedDateTime.now().plusMinutes(60))
+                .setExpiration(ZonedDateTime.now().plus(cookieDuration))
                 .addClaim("username", userEntity.getUsername())
                 .addClaim("roles", userEntity.getRoles());
         return JWT.getEncoder().encode(jwt, HMACSigner.newSHA256Signer(SECRET));
