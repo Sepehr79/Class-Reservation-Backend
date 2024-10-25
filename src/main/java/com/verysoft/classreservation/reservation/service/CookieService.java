@@ -1,10 +1,14 @@
 package com.verysoft.classreservation.reservation.service;
 
+import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Optional;
 
 @Service
 public class CookieService {
@@ -26,6 +30,16 @@ public class CookieService {
         Cookie cookie = new Cookie(cookieName, "");
         cookie.setMaxAge(0);
         return cookie;
+    }
+
+    public Optional<Cookie> getJwtCookie(ServletRequest request) {
+        Cookie[] cookies = ((HttpServletRequest) request).getCookies();
+        Optional<Cookie> sCookie = Optional.empty();
+        if (cookies != null) {
+            sCookie = Arrays.stream(cookies).filter(specificCookie -> specificCookie.getName().equals(cookieName))
+                    .findFirst();
+        }
+        return sCookie;
     }
 
 }
