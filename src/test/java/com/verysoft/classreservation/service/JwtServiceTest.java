@@ -5,7 +5,9 @@ import com.verysoft.classreservation.reservation.service.JwtService;
 import io.fusionauth.jwt.JWTException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Duration;
 import java.util.List;
 
 public class JwtServiceTest {
@@ -14,6 +16,7 @@ public class JwtServiceTest {
 
     @Test
     void generateAndVerifyJwt() {
+        ReflectionTestUtils.setField(JWT_SERVICE, "cookieDuration", Duration.ofSeconds(10));
         UserEntity userEntity = new UserEntity("sepehr", "11234", List.of("MANAGER"));
         String jwt = JWT_SERVICE.createJwt(userEntity);
         UserEntity user = JWT_SERVICE.verifyJwt(jwt);
